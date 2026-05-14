@@ -288,7 +288,7 @@ export function PatientsPage() {
                     <TextField
                         fullWidth
                         label="Número de Documento"
-                        placeholder="Ingrese DNI, CE u otro documento..."
+                        placeholder="Ingrese DNI..."
                         value={ndoc}
                         onChange={(e) => setNdoc(e.target.value)}
                         InputProps={{

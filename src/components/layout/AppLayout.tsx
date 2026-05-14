@@ -36,7 +36,8 @@ export function AppLayout({ currentUser, userIsAdmin, onLogout }: AppLayoutProps
                     flexGrow: 1,
                     display: 'flex',
                     flexDirection: 'column',
-                    ml: { md: `${DRAWER_WIDTH}px` },
+                    //ml: { md: `${DRAWER_WIDTH}px` },
+                    ml: { md: '40px' },
                     minWidth: 0,
                     bgcolor: 'background.default',
                 }}

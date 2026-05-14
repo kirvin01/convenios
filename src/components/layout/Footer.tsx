@@ -19,7 +19,7 @@ export function Footer() {
             }}
         >
             <Typography variant="caption" color="text.disabled">
-                © {new Date().getFullYear()} Gerencia Regional de Salud Cusco — HIS MINSA
+                © {new Date().getFullYear()} Gerencia Regional de Salud Cusco — Dirección de Estadística, Informática y Telecomunicaciones
             </Typography>
             <Typography variant="caption" color="text.disabled">
                 Sistema de Historial de Atenciones v1.0

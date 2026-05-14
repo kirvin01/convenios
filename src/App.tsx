@@ -8,6 +8,7 @@ import { AdminUsersPage } from './pages/AdminUsersPage';
 import { getCurrentUser, isAdmin, isAuthenticated, logout } from './services/authService';
 import { theme } from './theme';
 import './App.css';
+import { ReportesPage } from './pages/ReportesFED';
 
 function RequireAuth({ authenticated, children }: { authenticated: boolean; children: ReactNode }) {
     return authenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -69,6 +70,7 @@ export default function App() {
                     >
                         <Route path="/pacientes" element={<PatientsPage />} />
                         <Route path="/admin/usuarios" element={userIsAdmin ? <AdminUsersPage /> : <Navigate to="/pacientes" replace />} />
+                        <Route path="/reportes" element={<ReportesPage />} />
                         <Route path="/" element={<Navigate to="/pacientes" replace />} />
                     </Route>
 

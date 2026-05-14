@@ -23,17 +23,26 @@ interface NavItem {
 
 const navItems: NavItem[] = [
     {
-        label: 'Consulta Pacientes',
-        path: '/pacientes',
-        icon: <SearchIcon />,
-    },
-    {
         label: 'Admin Usuarios',
         path: '/admin/usuarios',
         icon: <AdminPanelSettingsIcon />,
         adminOnly: true,
         badge: 'Admin',
     },
+    {
+        label: 'Reportes',          
+        path: '/reportes',
+        icon: <AdminPanelSettingsIcon />,
+        // mientras solo se meustra para admin
+        adminOnly: true,
+        badge: 'Admin',      
+    },
+    {
+        label: 'Consulta Pacientes',
+        path: '/pacientes',
+        icon: <SearchIcon />,
+    },
+    
 ];
 
 interface SidebarProps {
@@ -111,7 +120,7 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
             <Divider sx={{ mx: 2 }} />
             <Box sx={{ px: 2, py: 1.5 }}>
                 <Typography variant="caption" color="text.disabled">
-                    v1.0.0 — GERESA Cusco
+                    v1.0.0
                 </Typography>
             </Box>
         </Box>

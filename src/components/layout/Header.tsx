@@ -10,7 +10,7 @@ import {
     Logout as LogoutIcon,
     Menu as MenuIcon,
 } from '@mui/icons-material';
-
+import logo from '../../assets/logo.webp';
 interface HeaderProps {
     currentUser: string;
     onLogout: () => void;
@@ -40,7 +40,8 @@ export function Header({ currentUser, onLogout, onToggleSidebar }: HeaderProps) 
                 </IconButton>
 
                 {/* Logo + Title */}
-                <Avatar
+                 {/*
+                 <Avatar
                     sx={{
                         width: 38, height: 38,
                         bgcolor: 'rgba(255,255,255,0.15)',
@@ -48,13 +49,27 @@ export function Header({ currentUser, onLogout, onToggleSidebar }: HeaderProps) 
                     }}
                 >
                     <LocalHospitalIcon sx={{ fontSize: 20 }} />
-                </Avatar>
+                </Avatar> */}
+                <Box
+                    component="img"
+                    src={logo}
+                    alt="Logo"
+                    sx={{
+                        width: 38,
+                        height: 38,
+                        objectFit: 'contain',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255,255,255,0.25)',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        padding: '4px',
+                    }}
+                />
                 <Box sx={{ flex: 1 }}>
                     <Typography variant="subtitle1" fontWeight={700} color="white" sx={{ lineHeight: 1.1 }}>
-                        GERESA — HIS MINSA
+                        GERENCIA REGIONAL DE SALUD CUSCO
                     </Typography>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.65)', display: { xs: 'none', sm: 'block' } }}>
-                        Gerencia Regional de Salud Cusco
+                        Sistema de Información en Salud
                     </Typography>
                 </Box>
 
