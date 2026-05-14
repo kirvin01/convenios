@@ -9,6 +9,7 @@ import { getCurrentUser, isAdmin, isAuthenticated, logout } from './services/aut
 import { theme } from './theme';
 import './App.css';
 import { ReportesPage } from './pages/ReportesFED';
+import { CG10Page } from './pages/CG10Page';
 
 function RequireAuth({ authenticated, children }: { authenticated: boolean; children: ReactNode }) {
     return authenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -70,7 +71,8 @@ export default function App() {
                     >
                         <Route path="/pacientes" element={<PatientsPage />} />
                         <Route path="/admin/usuarios" element={userIsAdmin ? <AdminUsersPage /> : <Navigate to="/pacientes" replace />} />
-                        <Route path="/reportes" element={<ReportesPage />} />
+                        <Route path="/reportesFED" element={<ReportesPage />} />
+                        <Route path="/reportesCG" element={<CG10Page />} />
                         <Route path="/" element={<Navigate to="/pacientes" replace />} />
                     </Route>
 

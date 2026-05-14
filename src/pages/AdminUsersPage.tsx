@@ -83,12 +83,12 @@ export function AdminUsersPage() {
         setDialogOpen(true);
     };
 
-    const openEdit = (user: User) => {
+    /*const openEdit = (user: User) => {
         setEditingUser(user);
         setForm({ username: user.username, password: '', role: user.role });
         setFormError(null);
         setDialogOpen(true);
-    };
+    };*/
 
     const closeDialog = () => {
         setDialogOpen(false);
@@ -252,7 +252,7 @@ export function AdminUsersPage() {
                                         />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Tooltip title="Editar">
+                                        {/* <Tooltip title="Editar">
                                             <IconButton
                                                 size="small"
                                                 color="primary"
@@ -261,7 +261,7 @@ export function AdminUsersPage() {
                                             >
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
-                                        </Tooltip>
+                                        </Tooltip> */}
                                         <Tooltip title="Eliminar">
                                             <IconButton
                                                 size="small"

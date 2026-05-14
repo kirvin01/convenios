@@ -30,8 +30,16 @@ const navItems: NavItem[] = [
         badge: 'Admin',
     },
     {
-        label: 'Reportes',          
-        path: '/reportes',
+        label: 'Reportes FED',          
+        path: '/reportesFED',
+        icon: <AdminPanelSettingsIcon />,
+        // mientras solo se meustra para admin
+        adminOnly: true,
+        badge: 'Admin',      
+    },
+    {
+        label: 'Reportes CG',          
+        path: '/reportesCG',
         icon: <AdminPanelSettingsIcon />,
         // mientras solo se meustra para admin
         adminOnly: true,
