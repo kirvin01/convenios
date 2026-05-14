@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { InfoCard } from '../components/ui/InfoCard';
+import type { Paciente, Atencion, NotificationState } from '../types';
 import {
     Box, Button, Typography, Paper, TextField, InputAdornment,
     Alert, CircularProgress, IconButton, Modal, Container,
@@ -25,7 +27,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import { API_CONFIG } from '../config';
 import { authHeader } from '../services/authService';
-
+/*
 interface Paciente {
     Abrev_Tipo_Doc: string;
     Numero_Documento: string;
@@ -57,7 +59,7 @@ interface NotificationState {
     key: number;
     severity: 'error' | 'info' | 'warning';
     message: string;
-}
+} */
 
 const columnsAtenciones: GridColDef[] = [
     { field: 'N', headerName: '#', width: 50, sortable: false },
@@ -73,7 +75,7 @@ const columnsAtenciones: GridColDef[] = [
     { field: 'SISTEMA', headerName: 'Sistema', width: 110, sortable: false },
     { field: 'REGISTRADOR', headerName: 'Registrador', width: 180, sortable: false },
 ];
-
+/*
 function InfoCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
     return (
         <Box sx={{
@@ -92,7 +94,7 @@ function InfoCard({ icon, label, value }: { icon: React.ReactNode; label: string
             </Box>
         </Box>
     );
-}
+} */
 
 export function PatientsPage() {
     const [ndoc, setNdoc] = useState('');
@@ -408,16 +410,35 @@ export function PatientsPage() {
                         }}>
                             <Grid container spacing={1.5}>
                                 <Grid item xs={6} sm={3}>
-                                    <InfoCard icon={<PersonIcon fontSize="small" />} label="Documento" value={`${selectedPaciente.Abrev_Tipo_Doc}: ${selectedPaciente.Numero_Documento}`} />
+                                    <InfoCard
+                                        icon={<PersonIcon fontSize="small" />}
+                                        label="Documento"
+                                        value={`${selectedPaciente.Abrev_Tipo_Doc}: ${selectedPaciente.Numero_Documento}`}
+                                    />
                                 </Grid>
+
                                 <Grid item xs={6} sm={3}>
-                                    <InfoCard icon={<CakeIcon fontSize="small" />} label="Nacimiento" value={selectedPaciente.Fecha_Nacimiento} />
+                                    <InfoCard
+                                        icon={<CakeIcon fontSize="small" />}
+                                        label="Nacimiento"
+                                        value={selectedPaciente.Fecha_Nacimiento}
+                                    />
                                 </Grid>
+
                                 <Grid item xs={6} sm={3}>
-                                    <InfoCard icon={<WcIcon fontSize="small" />} label="Género" value={selectedPaciente.Genero === 'M' ? 'Masculino' : 'Femenino'} />
+                                    <InfoCard
+                                        icon={<WcIcon fontSize="small" />}
+                                        label="Género"
+                                        value={selectedPaciente.Genero === 'M' ? 'Masculino' : 'Femenino'}
+                                    />
                                 </Grid>
+
                                 <Grid item xs={6} sm={3}>
-                                    <InfoCard icon={<BadgeIcon fontSize="small" />} label="Edad" value={`${selectedPaciente.EDAD} años`} />
+                                    <InfoCard
+                                        icon={<BadgeIcon fontSize="small" />}
+                                        label="Edad"
+                                        value={`${selectedPaciente.EDAD} años`}
+                                    />
                                 </Grid>
                             </Grid>
                         </Box>
