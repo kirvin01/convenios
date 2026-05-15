@@ -48,12 +48,13 @@ import {
 // ── Constantes de subindicadores ──────────────────────────────────────────────
 
 const SUBIND = [
-  { key: 'ho', label: 'Historia Clínica',   short: 'HO', color: '#7B1FA2' },
-  { key: 'an', label: 'Antropometría',       short: 'AN', color: '#1565C0' },
-  { key: 'fb', label: 'FBNC',                short: 'FB', color: '#E65100' },
-  { key: 'pd', label: 'Plan Desarrollo',     short: 'PD', color: '#2E7D32' },
-  { key: 'as', label: 'Atención Salud',      short: 'AS', color: '#00695C' },
+  { key: 'ho', label: 'Higiene Oral',   short: 'HO', color: '#7B1FA2' },
+  { key: 'an', label: 'Asesoría Nutricional',       short: 'AN', color: '#1565C0' },
+  { key: 'fb', label: 'Flúor Barniz',                short: 'FB', color: '#E65100' },
+  { key: 'pd', label: 'Profilaxis Dental',     short: 'PD', color: '#2E7D32' },
+  { key: 'as', label: 'Sellantes',      short: 'AS', color: '#00695C' },
 ] as const;
+
 
 type ModoVista = 'territorial' | 'redes';
 
@@ -707,7 +708,7 @@ export function CG10Page() {
               sx={{ borderColor: alpha('#F57F17', 0.5), color: '#E65100', fontWeight: 600 }} />
           </Box>
           <Typography color="text.secondary">
-            Porcentaje de niños de 6 meses a 6 años 11 meses 29 días que recibieron el paquete integrado de atención (HO · AN · FBNC · PD · AS).
+            Porcentaje de niñas y niños (6 meses a 6 años, 11 meses y 29 días) que reciben procedimientos estomatológicos preventivos. 
           </Typography>
         </Box>
       </Box>

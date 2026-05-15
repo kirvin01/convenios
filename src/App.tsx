@@ -71,8 +71,11 @@ export default function App() {
                     >
                         <Route path="/pacientes" element={<PatientsPage />} />
                         <Route path="/admin/usuarios" element={userIsAdmin ? <AdminUsersPage /> : <Navigate to="/pacientes" replace />} />
-                        <Route path="/reportesFED" element={<ReportesPage />} />
-                        <Route path="/reportesCG" element={<CG10Page />} />
+                        <Route path="/reportesFED/fed01" element={<ReportesPage />} />
+                        <Route path="/reportesFED/fed02" element={<ReportesPage />} />
+
+                        <Route path="/reportesCG/cg10" element={<CG10Page />} />
+                        <Route path="/reportesCG/cg11" element={<CG10Page />} />
                         <Route path="/" element={<Navigate to="/pacientes" replace />} />
                     </Route>
 

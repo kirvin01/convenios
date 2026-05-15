@@ -5,20 +5,26 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import {
     Search as SearchIcon,
     AdminPanelSettings as AdminPanelSettingsIcon,
     LocalHospital as LocalHospitalIcon,
+    ExpandLess,
+    ExpandMore,
+    Folder as FolderIcon,
 } from '@mui/icons-material';
+import Collapse from '@mui/material/Collapse';
 
 const DRAWER_WIDTH = 240;
 
 interface NavItem {
     label: string;
-    path: string;
+    path?: string;
     icon: React.ReactNode;
     adminOnly?: boolean;
     badge?: string;
+    children?: NavItem[];
 }
 
 const navItems: NavItem[] = [
@@ -29,28 +35,52 @@ const navItems: NavItem[] = [
         adminOnly: true,
         badge: 'Admin',
     },
+
     {
-        label: 'Reportes FED',          
-        path: '/reportesFED',
-        icon: <AdminPanelSettingsIcon />,
-        // mientras solo se meustra para admin
+        label: 'Reportes FED',
+        icon: <FolderIcon />,
         adminOnly: true,
-        badge: 'Admin',      
+
+        children: [
+            {
+                label: 'MC-01.01',
+                path: '/reportesFED/fed01',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'FED-02',
+                path: '/reportesFED/fed02',
+                icon: <LocalHospitalIcon />,
+            },
+        ],
     },
+
     {
-        label: 'Reportes CG',          
-        path: '/reportesCG',
-        icon: <AdminPanelSettingsIcon />,
-        // mientras solo se meustra para admin
+        label: 'Reportes CG',
+        icon: <FolderIcon />,
         adminOnly: true,
-        badge: 'Admin',      
+
+        children: [
+            {
+                label: 'CG-10 Salud Bucal',
+                path: '/reportesCG/cg10',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'CG-11',
+                path: '/reportesCG/cg11',
+                icon: <LocalHospitalIcon />,
+            },
+        ],
     },
+
     {
         label: 'Consulta Pacientes',
         path: '/pacientes',
         icon: <SearchIcon />,
     },
-    
 ];
 
 interface SidebarProps {
@@ -64,6 +94,11 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
     const location = useLocation();
 
     const visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
+
+    const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({
+        'Reportes FED': true,
+        'Reportes CG': true,
+    });
 
     return (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -82,47 +117,121 @@ function SidebarContent({ isAdmin }: { isAdmin: boolean }) {
 
             <List sx={{ px: 1, pt: 1, flex: 1 }}>
                 {visibleItems.map((item) => {
-                    const active = location.pathname.startsWith(item.path);
+                const hasChildren = !!item.children;
+
+                // MENU CON HIJOS
+                if (hasChildren) {
                     return (
-                        <ListItemButton
-                            key={item.path}
-                            onClick={() => navigate(item.path)}
-                            sx={{
-                                borderRadius: 2,
-                                mb: 0.5,
-                                bgcolor: active ? alpha('#1565C0', 0.1) : 'transparent',
-                                color: active ? 'primary.dark' : 'text.primary',
-                                '&:hover': {
-                                    bgcolor: active ? alpha('#1565C0', 0.14) : alpha('#1565C0', 0.05),
-                                },
-                            }}
-                        >
-                            <ListItemIcon
+                        <Box key={item.label}>
+                            <ListItemButton
+                                onClick={() =>
+                                    setOpenMenus((prev) => ({
+                                        ...prev,
+                                        [item.label]: !prev[item.label],
+                                    }))
+                                }
                                 sx={{
-                                    minWidth: 38,
-                                    color: active ? 'primary.main' : 'text.secondary',
+                                    borderRadius: 2,
+                                    mb: 0.5,
                                 }}
                             >
-                                {item.icon}
-                            </ListItemIcon>
-                            <ListItemText
-                                primary={item.label}
-                                primaryTypographyProps={{
-                                    fontSize: '0.875rem',
-                                    fontWeight: active ? 700 : 500,
-                                }}
-                            />
-                            {item.badge && (
-                                <Chip
-                                    label={item.badge}
-                                    size="small"
-                                    color="secondary"
-                                    sx={{ height: 18, fontSize: '0.65rem' }}
-                                />
-                            )}
-                        </ListItemButton>
+                                <ListItemIcon sx={{ minWidth: 38 }}>
+                                    {item.icon}
+                                </ListItemIcon>
+
+                                <ListItemText primary={item.label} />
+
+                                {openMenus[item.label]
+                                    ? <ExpandLess />
+                                    : <ExpandMore />}
+                            </ListItemButton>
+
+                            <Collapse
+                                in={openMenus[item.label]}
+                                timeout="auto"
+                                unmountOnExit
+                            >
+                                <List component="div" disablePadding>
+                                    {item.children?.map((child) => {
+                                        const active =
+                                            location.pathname === child.path;
+
+                                        return (
+                                            <ListItemButton
+                                                key={child.path}
+                                                onClick={() =>
+                                                    navigate(child.path!)
+                                                }
+                                                sx={{
+                                                    pl: 4,
+                                                    borderRadius: 2,
+                                                    mb: 0.5,
+                                                    bgcolor: active
+                                                        ? alpha('#1565C0', 0.1)
+                                                        : 'transparent',
+                                                }}
+                                            >
+                                                <ListItemIcon
+                                                    sx={{
+                                                        minWidth: 32,
+                                                        color: active
+                                                            ? 'primary.main'
+                                                            : 'text.secondary',
+                                                    }}
+                                                >
+                                                    {child.icon}
+                                                </ListItemIcon>
+
+                                                <ListItemText
+                                                    primary={child.label}
+                                                    primaryTypographyProps={{
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: active
+                                                            ? 700
+                                                            : 500,
+                                                    }}
+                                                />
+                                            </ListItemButton>
+                                        );
+                                    })}
+                                </List>
+                            </Collapse>
+                        </Box>
                     );
-                })}
+                }
+
+                // MENU NORMAL
+                const active = location.pathname.startsWith(item.path || '');
+
+                return (
+                    <ListItemButton
+                        key={item.path}
+                        onClick={() => navigate(item.path!)}
+                        sx={{
+                            borderRadius: 2,
+                            mb: 0.5,
+                            bgcolor: active
+                                ? alpha('#1565C0', 0.1)
+                                : 'transparent',
+                        }}
+                    >
+                        <ListItemIcon
+                            sx={{
+                                minWidth: 38,
+                                color: active
+                                    ? 'primary.main'
+                                    : 'text.secondary',
+                            }}
+                        >
+                            {item.icon}
+                        </ListItemIcon>
+
+                        <ListItemText
+                            primary={item.label}
+                        />
+                    </ListItemButton>
+                );
+            })}
             </List>
 
             <Divider sx={{ mx: 2 }} />
