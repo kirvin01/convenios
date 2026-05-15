@@ -1,8 +1,8 @@
 // src/services/fedMC0101Service.ts
 // Servicio para el reporte FED MC-01_01 — igual patrón que PatientsPage
 
-import { API_CONFIG } from '../config';
-import { authHeader } from './authService';
+import { API_CONFIG } from '../../config';
+import { authHeader } from '../authService';
 
 const BASE = `${API_CONFIG.baseURL}/fed/mc0101`;
 

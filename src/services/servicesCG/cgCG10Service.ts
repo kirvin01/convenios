@@ -2,8 +2,8 @@
 // Servicio para el reporte Convenio de Gestión CG-10
 // Niños 6m–6a11m29d con paquete integrado de atención
 
-import { API_CONFIG } from '../config';
-import { authHeader } from './authService';
+import { API_CONFIG } from '../../config';
+import { authHeader } from '../authService';
 
 const BASE = `${API_CONFIG.baseURL}/cg/cg10`;
 

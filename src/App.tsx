@@ -8,8 +8,9 @@ import { AdminUsersPage } from './pages/AdminUsersPage';
 import { getCurrentUser, isAdmin, isAuthenticated, logout } from './services/authService';
 import { theme } from './theme';
 import './App.css';
-import { ReportesPage } from './pages/ReportesFED';
-import { CG10Page } from './pages/CG10Page';
+import { ReportesPage } from './pages/FED/ReportesFED';
+import { CG10Page } from './pages/CG/CG10Page';
+import { HisDiarioPage } from './pages/FED/HisDiarioPage';
 
 function RequireAuth({ authenticated, children }: { authenticated: boolean; children: ReactNode }) {
     return authenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -72,7 +73,7 @@ export default function App() {
                         <Route path="/pacientes" element={<PatientsPage />} />
                         <Route path="/admin/usuarios" element={userIsAdmin ? <AdminUsersPage /> : <Navigate to="/pacientes" replace />} />
                         <Route path="/reportesFED/fed01" element={<ReportesPage />} />
-                        <Route path="/reportesFED/fed02" element={<ReportesPage />} />
+                        <Route path="/reportesFED/fed02" element={<HisDiarioPage />} />
 
                         <Route path="/reportesCG/cg10" element={<CG10Page />} />
                         <Route path="/reportesCG/cg11" element={<CG10Page />} />

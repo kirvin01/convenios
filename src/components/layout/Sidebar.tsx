@@ -49,7 +49,7 @@ const navItems: NavItem[] = [
             },
 
             {
-                label: 'FED-02',
+                label: 'Variación Diaria',
                 path: '/reportesFED/fed02',
                 icon: <LocalHospitalIcon />,
             },

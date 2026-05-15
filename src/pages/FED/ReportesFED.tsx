@@ -1,5 +1,4 @@
-// src/components/CG10Page.tsx
-// Convenio de Gestión CG-10
+// src/components/FedMC0101Page.tsx
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -7,7 +6,7 @@ import {
   FormControl, InputLabel, Select, MenuItem,
   CircularProgress, Alert, Chip, Avatar,
   Collapse, IconButton, TextField, InputAdornment,
-  Divider, ToggleButton, ToggleButtonGroup, Tooltip,
+  Divider, ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import {
   DataGrid,
@@ -20,7 +19,7 @@ import {
   KeyboardArrowRight as ArrowRightIcon,
   Search as SearchIcon,
   FilterList as FilterListIcon,
-  ChildCare as ChildCareIcon,
+  PregnantWoman as PregnantWomanIcon,
   AccountTree as AccountTreeIcon,
   Hub as HubIcon,
 } from '@mui/icons-material';
@@ -28,33 +27,22 @@ import { alpha } from '@mui/material/styles';
 import {
   ResponsiveContainer, BarChart, Bar,
   XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, Legend, RadarChart,
-  PolarGrid, PolarAngleAxis, Radar,
+  Tooltip as RTooltip, Legend,
 } from 'recharts';
 import {
-  cgCG10Service,
-  type FiltrosCG10,
-  type SubindicadoresCols,
-  type TablaCompletaCG10,
-  type TablaRedesCG10,
-  type ProvinciaRowCG10,
-  type DistritoRowCG10,
-  type RedRowCG10,
-  type MicroredRowCG10,
-  type EstablecimientoRowCG10,
-  type ResumenRowCG10,
-} from '../services/cgCG10Service';
+  fedMC0101Service,
+  type FiltrosData,
+  type TablaCompletaData,
+  type TablaRedesData,
+  type ProvinciaRow,
+  type DistritoRow,
+  type RedRow,
+  type MicroredRow,
+  type EstablecimientoRow,
+  type ResumenRow,
+} from '../../services/servicesFED/fedMC0101Service';
 
-// ── Constantes de subindicadores ──────────────────────────────────────────────
-
-const SUBIND = [
-  { key: 'ho', label: 'Higiene Oral',   short: 'HO', color: '#7B1FA2' },
-  { key: 'an', label: 'Asesoría Nutricional',       short: 'AN', color: '#1565C0' },
-  { key: 'fb', label: 'Flúor Barniz',                short: 'FB', color: '#E65100' },
-  { key: 'pd', label: 'Profilaxis Dental',     short: 'PD', color: '#2E7D32' },
-  { key: 'as', label: 'Sellantes',      short: 'AS', color: '#00695C' },
-] as const;
-
+// ── Tipos de vista ────────────────────────────────────────────────────────────
 
 type ModoVista = 'territorial' | 'redes';
 
@@ -70,87 +58,48 @@ const pctColor = (v: number | null | undefined): 'success' | 'warning' | 'error'
   return 'error';
 };
 
-// ── Columnas subindicadores para DataGrid ─────────────────────────────────────
+// ── Columnas DataGrid — Organización Territorial ──────────────────────────────
 
-const colsSubind: GridColDef[] = SUBIND.map((s) => ({
-  field: `${s.key}_pct`,
-  headerName: s.short,
-  width: 80,
-  headerAlign: 'center' as const,
-  align: 'center' as const,
-  renderHeader: () => (
-    <Tooltip title={s.label}>
-      <Typography variant="caption" fontWeight={700} color={s.color}>{s.short} %</Typography>
-    </Tooltip>
-  ),
-  renderCell: (p: { value: number }) => (
-    <Chip label={fmtPct(p.value)} color={pctColor(p.value)} size="small"
-      sx={{ fontWeight: 700, minWidth: 60, fontSize: '0.7rem' }} />
-  ),
-}));
-
-const columnasPlanasTerritorial: GridColDef[] = [
-  { field: 'DEPARTAMENTO', headerName: 'Depto.',      width: 90,  sortable: false },
-  { field: 'PROVINCIA',    headerName: 'Provincia',   width: 110, sortable: false },
-  { field: 'DISTRITO',     headerName: 'Distrito',    flex: 1, minWidth: 130, sortable: false },
-  { field: 'denominador',  headerName: 'Denom.',      width: 80,  type: 'number', headerAlign: 'center', align: 'center' },
-  { field: 'numerador',    headerName: 'Numer.',      width: 75,  type: 'number', headerAlign: 'center', align: 'center' },
+const columnasDetalleTerritorial: GridColDef[] = [
+  { field: 'DEPARTAMENTO', headerName: 'Departamento', width: 130, sortable: false },
+  { field: 'PROVINCIA',    headerName: 'Provincia',    width: 130, sortable: false },
+  { field: 'DISTRITO',     headerName: 'Distrito',     flex: 1, minWidth: 140, sortable: false },
+  { field: 'denominador',  headerName: 'Denominador',  width: 120, type: 'number', headerAlign: 'center', align: 'center' },
+  { field: 'numerador',    headerName: 'Numerador',    width: 110, type: 'number', headerAlign: 'center', align: 'center' },
   {
-    field: 'avance_pct', headerName: 'Avance %', width: 105, headerAlign: 'center', align: 'center',
-    renderCell: (p) => <Chip label={fmtPct(p.value as number)} color={pctColor(p.value as number)}
-      size="small" sx={{ fontWeight: 700, minWidth: 72 }} />,
+    field: 'avance_pct', headerName: 'Avance %', width: 120,
+    headerAlign: 'center', align: 'center',
+    renderCell: (p) => (
+      <Chip label={fmtPct(p.value as number)} color={pctColor(p.value as number)}
+        size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
+    ),
   },
-  ...colsSubind,
 ];
 
-const columnasPlanaRedes: GridColDef[] = [
-  { field: 'RED',             headerName: 'Red',            width: 130, sortable: false },
-  { field: 'MICRORED',        headerName: 'Microred',       width: 140, sortable: false },
-  { field: 'ESTABLECIMIENTO', headerName: 'Establecimiento', flex: 1, minWidth: 140, sortable: false },
-  { field: 'denominador',     headerName: 'Denom.',         width: 80,  type: 'number', headerAlign: 'center', align: 'center' },
-  { field: 'numerador',       headerName: 'Numer.',         width: 75,  type: 'number', headerAlign: 'center', align: 'center' },
+// ── Columnas DataGrid — Redes Integradas de Salud ─────────────────────────────
+
+const columnasDetalleRedes: GridColDef[] = [
+  { field: 'RED',             headerName: 'Red',             width: 150, sortable: false },
+  { field: 'MICRORED',        headerName: 'Microred',        width: 160, sortable: false },
+  { field: 'ESTABLECIMIENTO', headerName: 'Establecimiento', flex: 1, minWidth: 160, sortable: false },
+  { field: 'denominador',     headerName: 'Denominador',     width: 120, type: 'number', headerAlign: 'center', align: 'center' },
+  { field: 'numerador',       headerName: 'Numerador',       width: 110, type: 'number', headerAlign: 'center', align: 'center' },
   {
-    field: 'avance_pct', headerName: 'Avance %', width: 105, headerAlign: 'center', align: 'center',
-    renderCell: (p) => <Chip label={fmtPct(p.value as number)} color={pctColor(p.value as number)}
-      size="small" sx={{ fontWeight: 700, minWidth: 72 }} />,
+    field: 'avance_pct', headerName: 'Avance %', width: 120,
+    headerAlign: 'center', align: 'center',
+    renderCell: (p) => (
+      <Chip label={fmtPct(p.value as number)} color={pctColor(p.value as number)}
+        size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
+    ),
   },
-  ...colsSubind,
 ];
 
-// ── Sub-componente: mini chips de subindicadores en fila ──────────────────────
-
-function SubindChips({ row, small = false }: { row: SubindicadoresCols; small?: boolean }) {
-  return (
-    <Box display="flex" gap={0.5} flexWrap="wrap">
-      {SUBIND.map((s) => {
-        const pct = row[`${s.key}_pct` as keyof SubindicadoresCols] as number;
-        return (
-          <Tooltip key={s.key} title={`${s.label}: ${fmtPct(pct)}`}>
-            <Chip
-              label={`${s.short} ${fmtPct(pct)}`}
-              size="small"
-              sx={{
-                fontWeight: 700,
-                fontSize: small ? '0.65rem' : '0.7rem',
-                bgcolor: alpha(s.color, 0.12),
-                color: s.color,
-                border: `1px solid ${alpha(s.color, 0.3)}`,
-                height: small ? 18 : 22,
-              }}
-            />
-          </Tooltip>
-        );
-      })}
-    </Box>
-  );
-}
-
-// ── Sub-componente: fila provincia colapsable ─────────────────────────────────
+// ── Sub-componente: fila de provincia colapsable ──────────────────────────────
 
 function ProvinciaFila({
   prov, distritos, busqueda,
 }: {
-  prov: ProvinciaRowCG10; distritos: DistritoRowCG10[]; busqueda: string;
+  prov: ProvinciaRow; distritos: DistritoRow[]; busqueda: string;
 }) {
   const [open, setOpen] = useState(true);
   const filas = useMemo(() => {
@@ -167,19 +116,18 @@ function ProvinciaFila({
       <Box
         onClick={() => setOpen((o) => !o)}
         sx={{
-          display: 'grid', gridTemplateColumns: '36px 110px 1fr 90px 80px 110px 1fr',
+          display: 'grid',
+          gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
           alignItems: 'center', px: 1, py: 0.75,
-          bgcolor: alpha('#1565C0', 0.09), cursor: 'pointer',
-          borderBottom: '1px solid', borderColor: alpha('#1565C0', 0.14),
-          '&:hover': { bgcolor: alpha('#1565C0', 0.14) },
+          bgcolor: alpha('#1565C0', 0.10), cursor: 'pointer',
+          borderBottom: '1px solid', borderColor: alpha('#1565C0', 0.15),
+          '&:hover': { bgcolor: alpha('#1565C0', 0.15) },
         }}
       >
         <IconButton size="small" sx={{ p: 0 }}>
           {open ? <ArrowDownIcon fontSize="small" /> : <ArrowRightIcon fontSize="small" />}
         </IconButton>
-        <Typography variant="body2" fontWeight={700} color="primary.dark" sx={{ fontSize: '0.78rem' }}>
-          {prov.DEPARTAMENTO}
-        </Typography>
+        <Typography variant="body2" fontWeight={700} color="primary.dark">{prov.DEPARTAMENTO}</Typography>
         <Typography variant="body2" fontWeight={700} color="primary.dark">Total {prov.PROVINCIA}</Typography>
         <Typography variant="body2" fontWeight={700} textAlign="center">{prov.denominador}</Typography>
         <Typography variant="body2" fontWeight={700} textAlign="center">{prov.numerador}</Typography>
@@ -187,29 +135,28 @@ function ProvinciaFila({
           <Chip label={fmtPct(prov.avance_pct)} color={pctColor(prov.avance_pct)}
             size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
         </Box>
-        <SubindChips row={prov} small />
       </Box>
       <Collapse in={open} timeout="auto" unmountOnExit>
         {filas.map((d) => (
           <Box
             key={d.DISTRITO}
             sx={{
-              display: 'grid', gridTemplateColumns: '36px 110px 1fr 90px 80px 110px 1fr',
-              alignItems: 'center', px: 1, py: 0.45,
+              display: 'grid',
+              gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
+              alignItems: 'center', px: 1, py: 0.5,
               borderBottom: '1px solid', borderColor: alpha('#000', 0.04),
               '&:hover': { bgcolor: alpha('#1565C0', 0.04) },
             }}
           >
             <Box />
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>{d.DEPARTAMENTO}</Typography>
-            <Typography variant="body2" sx={{ pl: 1, fontSize: '0.8rem' }}>{d.DISTRITO}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>{d.DEPARTAMENTO}</Typography>
+            <Typography variant="body2" sx={{ pl: 1 }}>{d.DISTRITO}</Typography>
             <Typography variant="body2" textAlign="center">{d.denominador}</Typography>
             <Typography variant="body2" textAlign="center">{d.numerador}</Typography>
             <Box display="flex" justifyContent="center">
               <Chip label={fmtPct(d.avance_pct)} color={pctColor(d.avance_pct)}
                 size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
             </Box>
-            <SubindChips row={d} small />
           </Box>
         ))}
       </Collapse>
@@ -217,17 +164,24 @@ function ProvinciaFila({
   );
 }
 
-// ── Sub-componente: fila Red colapsable ───────────────────────────────────────
+// ── Sub-componente: fila de Red colapsable (con Microredes y Establecimientos) ─
 
 function RedFila({
   red, microredes, establecimientos, busqueda,
 }: {
-  red: RedRowCG10; microredes: MicroredRowCG10[];
-  establecimientos: EstablecimientoRowCG10[]; busqueda: string;
+  red: RedRow;
+  microredes: MicroredRow[];
+  establecimientos: EstablecimientoRow[];
+  busqueda: string;
 }) {
   const [open, setOpen] = useState(true);
-  const mrDeRed = useMemo(() => microredes.filter((m) => m.RED === red.RED), [microredes, red.RED]);
 
+  const microredesDeLaRed = useMemo(
+    () => microredes.filter((m) => m.RED === red.RED),
+    [microredes, red.RED],
+  );
+
+  // Si búsqueda activa y ningún establecimiento coincide, no renderizar
   const tieneCoincidencia = useMemo(() => {
     if (!busqueda) return true;
     const q = busqueda.toUpperCase();
@@ -241,34 +195,43 @@ function RedFila({
 
   return (
     <>
+      {/* ── Subtotal Red ── */}
       <Box
         onClick={() => setOpen((o) => !o)}
         sx={{
-          display: 'grid', gridTemplateColumns: '36px 1fr 1fr 90px 80px 110px 1fr',
+          display: 'grid',
+          gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
           alignItems: 'center', px: 1, py: 0.75,
-          bgcolor: alpha('#00695C', 0.09), cursor: 'pointer',
-          borderBottom: '1px solid', borderColor: alpha('#00695C', 0.14),
-          '&:hover': { bgcolor: alpha('#00695C', 0.14) },
+          bgcolor: alpha('#00695C', 0.10), cursor: 'pointer',
+          borderBottom: '1px solid', borderColor: alpha('#00695C', 0.15),
+          '&:hover': { bgcolor: alpha('#00695C', 0.15) },
         }}
       >
         <IconButton size="small" sx={{ p: 0 }}>
           {open ? <ArrowDownIcon fontSize="small" /> : <ArrowRightIcon fontSize="small" />}
         </IconButton>
-        <Typography variant="body2" fontWeight={700} color="success.dark">{red.RED}</Typography>
-        <Typography variant="body2" fontWeight={700} color="success.dark">Total Red</Typography>
+        <Typography variant="body2" fontWeight={700} color="success.dark" sx={{ gridColumn: 'span 1' }}>
+          {red.RED}
+        </Typography>
+        <Typography variant="body2" fontWeight={700} color="success.dark">
+          Total Red
+        </Typography>
         <Typography variant="body2" fontWeight={700} textAlign="center">{red.denominador}</Typography>
         <Typography variant="body2" fontWeight={700} textAlign="center">{red.numerador}</Typography>
         <Box display="flex" justifyContent="center">
           <Chip label={fmtPct(red.avance_pct)} color={pctColor(red.avance_pct)}
             size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
         </Box>
-        <SubindChips row={red} small />
       </Box>
+
+      {/* ── Microredes de esta Red ── */}
       <Collapse in={open} timeout="auto" unmountOnExit>
-        {mrDeRed.map((mr) => (
+        {microredesDeLaRed.map((mr) => (
           <MicroredFila
             key={`${mr.RED}-${mr.MICRORED}`}
-            microred={mr} establecimientos={establecimientos} busqueda={busqueda}
+            microred={mr}
+            establecimientos={establecimientos}
+            busqueda={busqueda}
           />
         ))}
       </Collapse>
@@ -276,16 +239,23 @@ function RedFila({
   );
 }
 
+// ── Sub-componente: fila de Microred colapsable ───────────────────────────────
+
 function MicroredFila({
   microred, establecimientos, busqueda,
 }: {
-  microred: MicroredRowCG10; establecimientos: EstablecimientoRowCG10[]; busqueda: string;
+  microred: MicroredRow;
+  establecimientos: EstablecimientoRow[];
+  busqueda: string;
 }) {
   const [open, setOpen] = useState(true);
+
   const filas = useMemo(() => {
     const q = busqueda.toUpperCase();
     return establecimientos.filter(
-      (e) => e.RED === microred.RED && e.MICRORED === microred.MICRORED &&
+      (e) =>
+        e.RED === microred.RED &&
+        e.MICRORED === microred.MICRORED &&
         (!q || e.ESTABLECIMIENTO.toUpperCase().includes(q) || e.MICRORED.toUpperCase().includes(q)),
     );
   }, [establecimientos, microred.RED, microred.MICRORED, busqueda]);
@@ -294,21 +264,23 @@ function MicroredFila({
 
   return (
     <>
+      {/* ── Subtotal Microred ── */}
       <Box
         onClick={() => setOpen((o) => !o)}
         sx={{
-          display: 'grid', gridTemplateColumns: '36px 36px 1fr 90px 80px 110px 1fr',
-          alignItems: 'center', px: 1, py: 0.55,
-          bgcolor: alpha('#00695C', 0.04), cursor: 'pointer',
-          borderBottom: '1px solid', borderColor: alpha('#00695C', 0.08),
-          '&:hover': { bgcolor: alpha('#00695C', 0.08) },
+          display: 'grid',
+          gridTemplateColumns: '40px 40px 1fr 110px 100px 120px',
+          alignItems: 'center', px: 1, py: 0.6,
+          bgcolor: alpha('#00695C', 0.05), cursor: 'pointer',
+          borderBottom: '1px solid', borderColor: alpha('#00695C', 0.10),
+          '&:hover': { bgcolor: alpha('#00695C', 0.10) },
         }}
       >
         <Box />
         <IconButton size="small" sx={{ p: 0 }}>
           {open ? <ArrowDownIcon fontSize="small" /> : <ArrowRightIcon fontSize="small" />}
         </IconButton>
-        <Typography variant="body2" fontWeight={600} color="success.dark" sx={{ fontSize: '0.8rem' }}>
+        <Typography variant="body2" fontWeight={600} color="success.dark">
           {microred.MICRORED}
         </Typography>
         <Typography variant="body2" fontWeight={600} textAlign="center">{microred.denominador}</Typography>
@@ -317,28 +289,29 @@ function MicroredFila({
           <Chip label={fmtPct(microred.avance_pct)} color={pctColor(microred.avance_pct)}
             size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
         </Box>
-        <SubindChips row={microred} small />
       </Box>
+
+      {/* ── Establecimientos ── */}
       <Collapse in={open} timeout="auto" unmountOnExit>
         {filas.map((e) => (
           <Box
             key={`${e.MICRORED}-${e.ESTABLECIMIENTO}`}
             sx={{
-              display: 'grid', gridTemplateColumns: '36px 36px 1fr 90px 80px 110px 1fr',
-              alignItems: 'center', px: 1, py: 0.4,
+              display: 'grid',
+              gridTemplateColumns: '40px 40px 1fr 110px 100px 120px',
+              alignItems: 'center', px: 1, py: 0.45,
               borderBottom: '1px solid', borderColor: alpha('#000', 0.04),
               '&:hover': { bgcolor: alpha('#00695C', 0.04) },
             }}
           >
             <Box /><Box />
-            <Typography variant="body2" sx={{ pl: 1, fontSize: '0.78rem' }}>{e.ESTABLECIMIENTO}</Typography>
+            <Typography variant="body2" sx={{ pl: 1, fontSize: '0.8rem' }}>{e.ESTABLECIMIENTO}</Typography>
             <Typography variant="body2" textAlign="center">{e.denominador}</Typography>
             <Typography variant="body2" textAlign="center">{e.numerador}</Typography>
             <Box display="flex" justifyContent="center">
               <Chip label={fmtPct(e.avance_pct)} color={pctColor(e.avance_pct)}
                 size="small" sx={{ fontWeight: 700, minWidth: 72 }} />
             </Box>
-            <SubindChips row={e} small />
           </Box>
         ))}
       </Collapse>
@@ -346,59 +319,15 @@ function MicroredFila({
   );
 }
 
-// ── KPI Cards de subindicadores ───────────────────────────────────────────────
+// ── Gráfico de barras genérico ────────────────────────────────────────────────
 
-function SubindicadoresKPIs({ total }: { total: SubindicadoresCols }) {
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: 2, borderRadius: 3,
-        border: '1px solid', borderColor: alpha('#1565C0', 0.12),
-        boxShadow: '0 4px 24px rgba(21,101,192,0.08)',
-      }}
-    >
-      <Typography variant="subtitle2" fontWeight={700} color="text.secondary" mb={1.5}>
-        Avance por Subindicador
-      </Typography>
-      <Box display="flex" flexWrap="wrap" gap={1.5}>
-        {SUBIND.map((s) => {
-          const pct = total[`${s.key}_pct` as keyof SubindicadoresCols] as number;
-          const cumple = total[`${s.key}_cumple` as keyof SubindicadoresCols] as number;
-          return (
-            <Box
-              key={s.key}
-              sx={{
-                flex: '1 1 130px',
-                p: 1.5, borderRadius: 2,
-                bgcolor: alpha(s.color, 0.07),
-                border: `1px solid ${alpha(s.color, 0.20)}`,
-              }}
-            >
-              <Typography variant="caption" fontWeight={700} color={s.color} display="block">
-                {s.label}
-              </Typography>
-              <Typography variant="h5" fontWeight={900} color={s.color} lineHeight={1.2} mt={0.5}>
-                {fmtPct(pct)}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {cumple?.toLocaleString()} / {total.denominador?.toLocaleString()}
-              </Typography>
-            </Box>
-          );
-        })}
-      </Box>
-    </Paper>
-  );
-}
-
-// ── Gráfico Radar de subindicadores ──────────────────────────────────────────
-
-function GraficoRadar({ total }: { total: SubindicadoresCols }) {
-  const data = SUBIND.map((s) => ({
-    subject: s.label,
-    'Avance %': total[`${s.key}_pct` as keyof SubindicadoresCols] as number ?? 0,
-  }));
+function GraficoBarras({
+  titulo, data,
+}: {
+  titulo: string;
+  data: { name: string; Denominador: number; Numerador: number; 'Avance %': number }[];
+}) {
+  if (!data.length) return null;
   return (
     <Paper
       elevation={0}
@@ -408,16 +337,24 @@ function GraficoRadar({ total }: { total: SubindicadoresCols }) {
         boxShadow: '0 4px 24px rgba(21,101,192,0.08)',
       }}
     >
-      <Typography variant="subtitle2" fontWeight={700} color="text.secondary" mb={1}>
-        Radar de Subindicadores
+      <Typography variant="subtitle2" fontWeight={700} color="text.secondary" mb={1.5}>
+        {titulo}
       </Typography>
-      <ResponsiveContainer width="100%" height={190}>
-        <RadarChart data={data}>
-          <PolarGrid stroke={alpha('#000', 0.1)} />
-          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
-          <Radar name="Avance %" dataKey="Avance %" stroke="#1565C0" fill={alpha('#1565C0', 0.25)} />
-          <RTooltip formatter={(v) => [`${v}%`, 'Avance']} />
-        </RadarChart>
+      <ResponsiveContainer width="100%" height={210}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={alpha('#000', 0.06)} />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+          <YAxis tick={{ fontSize: 10 }} />
+          <RTooltip
+            contentStyle={{ fontSize: 12, borderRadius: 8 }}
+            formatter={(value, name) =>
+              name === 'Avance %' ? [`${value}%`, String(name)] : [value ?? 0, String(name)]
+            }
+          />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Bar dataKey="Denominador" fill={alpha('#42A5F5', 0.8)} radius={[4,4,0,0]} />
+          <Bar dataKey="Numerador"   fill="#1565C0"               radius={[4,4,0,0]} />
+        </BarChart>
       </ResponsiveContainer>
     </Paper>
   );
@@ -425,10 +362,10 @@ function GraficoRadar({ total }: { total: SubindicadoresCols }) {
 
 // ── Gráfico de tendencia mensual ──────────────────────────────────────────────
 
-function GraficoTendencia({ resumen }: { resumen: ResumenRowCG10[] }) {
+function GraficoTendencia({ resumen }: { resumen: ResumenRow[] }) {
   if (!resumen.length) return null;
   const data = resumen.map((r) => ({
-    name:        r.Desc_Mes.slice(0, 3),
+    name:        r.MES.slice(0, 3),
     'Avance %':  r.avance_pct,
     Denominador: r.total_denominador,
     Numerador:   r.total_numerador,
@@ -450,7 +387,10 @@ function GraficoTendencia({ resumen }: { resumen: ResumenRowCG10[] }) {
           <CartesianGrid strokeDasharray="3 3" stroke={alpha('#000', 0.06)} />
           <XAxis dataKey="name" tick={{ fontSize: 10 }} />
           <YAxis unit="%" tick={{ fontSize: 10 }} />
-          <RTooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v) => [`${v ?? 0}%`, 'Avance']} />
+          <RTooltip
+            contentStyle={{ fontSize: 12, borderRadius: 8 }}
+            formatter={(v) => [`${v ?? 0}%`, 'Avance']}
+          />
           <Bar dataKey="Avance %" fill="#2E7D32" radius={[4,4,0,0]} />
         </BarChart>
       </ResponsiveContainer>
@@ -458,108 +398,40 @@ function GraficoTendencia({ resumen }: { resumen: ResumenRowCG10[] }) {
   );
 }
 
-// ── Cabecera de tabla jerárquica ──────────────────────────────────────────────
-
-function CabeceraTabla({ modo }: { modo: ModoVista }) {
-  const headers = modo === 'territorial'
-    ? ['', 'DEPTO.', 'PROVINCIA / DISTRITO', 'Denom.', 'Numer.', 'Avance %', 'Subindicadores']
-    : ['', 'RED / MICRORED', 'ESTABLECIMIENTO', 'Denom.', 'Numer.', 'Avance %', 'Subindicadores'];
-  const color = modo === 'territorial' ? '#1565C0' : '#00695C';
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: modo === 'territorial'
-          ? '36px 110px 1fr 90px 80px 110px 1fr'
-          : '36px 1fr 1fr 90px 80px 110px 1fr',
-        px: 1, py: 1,
-        bgcolor: alpha(color, 0.06),
-        borderBottom: '2px solid', borderColor: alpha(color, 0.15),
-      }}
-    >
-      {headers.map((h, i) => (
-        <Typography key={i} variant="caption" fontWeight={700} color="#1A2332"
-          textAlign={i >= 3 && i <= 5 ? 'center' : 'left'} sx={{ fontSize: '0.77rem' }}>
-          {h}
-        </Typography>
-      ))}
-    </Box>
-  );
-}
-
-// ── Fila total general ────────────────────────────────────────────────────────
-
-function FilaTotalGeneral({ total, color }: { total: SubindicadoresCols; color: string }) {
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: '36px 1fr 1fr 90px 80px 110px 1fr',
-        alignItems: 'center', px: 1, py: 1,
-        bgcolor: color, borderTop: '2px solid', borderColor: alpha('#000', 0.2),
-      }}
-    >
-      <Box />
-      <Typography variant="body2" fontWeight={900} color="#fff">TOTAL GENERAL</Typography>
-      <Box />
-      <Typography variant="body2" fontWeight={900} color="#fff" textAlign="center">
-        {total.denominador?.toLocaleString()}
-      </Typography>
-      <Typography variant="body2" fontWeight={900} color="#fff" textAlign="center">
-        {total.numerador?.toLocaleString()}
-      </Typography>
-      <Typography variant="body1" fontWeight={900} color="#fff" textAlign="center">
-        {fmtPct(total.avance_pct)}
-      </Typography>
-      <Box display="flex" gap={0.5} flexWrap="wrap">
-        {SUBIND.map((s) => {
-          const pct = total[`${s.key}_pct` as keyof SubindicadoresCols] as number;
-          return (
-            <Chip key={s.key} label={`${s.short} ${fmtPct(pct)}`} size="small"
-              sx={{ fontWeight: 700, fontSize: '0.65rem', bgcolor: 'rgba(255,255,255,0.2)', color: '#fff',
-                height: 18, border: '1px solid rgba(255,255,255,0.35)' }} />
-          );
-        })}
-      </Box>
-    </Box>
-  );
-}
-
 // ── Página principal ──────────────────────────────────────────────────────────
 
-export function CG10Page() {
-  // ── Estado de modo ──
+export function ReportesPage() {
+  // ── Modo de vista principal ──
   const [modoVista, setModoVista] = useState<ModoVista>('territorial');
 
   // ── Filtros comunes ──
-  const [filtros,      setFiltros]      = useState<FiltrosCG10 | null>(null);
+  const [filtros,      setFiltros]      = useState<FiltrosData | null>(null);
   const [anio,         setAnio]         = useState<number>(0);
   const [mes,          setMes]          = useState<string>('');
-  const [grupo,        setGrupo]        = useState<string>('');
   const [busqueda,     setBusqueda]     = useState<string>('');
   const [vista,        setVista]        = useState<'jerarquica' | 'plana'>('jerarquica');
 
-  // ── Filtros territoriales ──
+  // ── Filtros: Organización Territorial ──
   const [departamento, setDepartamento] = useState<string>('');
   const [provincia,    setProvincia]    = useState<string>('');
 
-  // ── Filtros de redes ──
-  const [red,      setRed]      = useState<string>('');
-  const [microred, setMicrored] = useState<string>('');
+  // ── Filtros: Redes Integradas de Salud ──
+  const [red,          setRed]          = useState<string>('');
+  const [microred,     setMicrored]     = useState<string>('');
 
   // ── Datos ──
-  const [tabla,          setTabla]          = useState<TablaCompletaCG10 | null>(null);
-  const [tablaRedes,     setTablaRedes]     = useState<TablaRedesCG10 | null>(null);
-  const [resumen,        setResumen]        = useState<ResumenRowCG10[]>([]);
-  const [loadingFiltros, setLoadingFiltros] = useState(true);
-  const [loadingTabla,   setLoadingTabla]   = useState(false);
-  const [loadingResumen, setLoadingResumen] = useState(false);
-  const [notification,   setNotification]  = useState<{ severity: 'error' | 'info'; message: string } | null>(null);
+  const [tabla,         setTabla]         = useState<TablaCompletaData | null>(null);
+  const [tablaRedes,    setTablaRedes]    = useState<TablaRedesData | null>(null);
+  const [resumen,       setResumen]       = useState<ResumenRow[]>([]);
+  const [loadingFiltros,setLoadingFiltros]= useState(true);
+  const [loadingTabla,  setLoadingTabla]  = useState(false);
+  const [loadingResumen,setLoadingResumen]= useState(false);
+  const [notification,  setNotification]  = useState<{ severity: 'error' | 'info'; message: string } | null>(null);
 
-  // ── Cargar filtros ──
+  // ── Cargar filtros al montar ──
   useEffect(() => {
     const ctrl = new AbortController();
-    cgCG10Service.getFiltros(ctrl.signal)
+    fedMC0101Service.getFiltros(ctrl.signal)
       .then((data) => {
         setFiltros(data);
         if (data.anios.length) setAnio(data.anios[0]);
@@ -572,17 +444,16 @@ export function CG10Page() {
     return () => ctrl.abort();
   }, []);
 
-  // ── Cargar resumen ──
+  // ── Cargar tendencia anual ──
   useEffect(() => {
     if (!anio) return;
     const ctrl = new AbortController();
     setLoadingResumen(true);
-    cgCG10Service.getResumen(
+    fedMC0101Service.getResumen(
       {
         anio,
-        departamento: modoVista === 'territorial' ? departamento || undefined : undefined,
-        red:          modoVista === 'redes'        ? red          || undefined : undefined,
-        grupo:        grupo || undefined,
+        departamento: modoVista === 'territorial' ? (departamento || undefined) : undefined,
+        red:          modoVista === 'redes'        ? (red          || undefined) : undefined,
       },
       ctrl.signal,
     )
@@ -590,15 +461,15 @@ export function CG10Page() {
       .catch((e: Error) => { if (e.name !== 'AbortError') setResumen([]); })
       .finally(() => setLoadingResumen(false));
     return () => ctrl.abort();
-  }, [anio, departamento, red, grupo, modoVista]);
+  }, [anio, departamento, red, modoVista]);
 
-  // ── Cargar tabla territorial ──
+  // ── Cargar tabla — Organización Territorial ──
   const cargarTablaCompleta = useCallback((signal?: AbortSignal) => {
     if (!anio || !mes || modoVista !== 'territorial') return;
     setLoadingTabla(true);
     setNotification(null);
-    cgCG10Service.getTablaCompleta(
-      { anio, mes, departamento: departamento || undefined, provincia: provincia || undefined, grupo: grupo || undefined },
+    fedMC0101Service.getTablaCompleta(
+      { anio, mes, departamento: departamento || undefined, provincia: provincia || undefined },
       signal,
     )
       .then((data) => {
@@ -611,15 +482,15 @@ export function CG10Page() {
         setNotification({ severity: 'error', message: e.message || 'Error al cargar los datos.' });
       })
       .finally(() => setLoadingTabla(false));
-  }, [anio, mes, departamento, provincia, grupo, modoVista]);
+  }, [anio, mes, departamento, provincia, modoVista]);
 
-  // ── Cargar tabla redes ──
+  // ── Cargar tabla — Redes ──
   const cargarTablaRedes = useCallback((signal?: AbortSignal) => {
     if (!anio || !mes || modoVista !== 'redes') return;
     setLoadingTabla(true);
     setNotification(null);
-    cgCG10Service.getTablaRedes(
-      { anio, mes, red: red || undefined, microred: microred || undefined, grupo: grupo || undefined },
+    fedMC0101Service.getTablaRedes(
+      { anio, mes, red: red || undefined, microred: microred || undefined },
       signal,
     )
       .then((data) => {
@@ -632,7 +503,7 @@ export function CG10Page() {
         setNotification({ severity: 'error', message: e.message || 'Error al cargar los datos.' });
       })
       .finally(() => setLoadingTabla(false));
-  }, [anio, mes, red, microred, grupo, modoVista]);
+  }, [anio, mes, red, microred, modoVista]);
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -641,7 +512,7 @@ export function CG10Page() {
     return () => ctrl.abort();
   }, [modoVista, cargarTablaCompleta, cargarTablaRedes]);
 
-  // ── Cambio de modo ──
+  // ── Limpiar datos al cambiar de modo ──
   const handleModoVista = (_: React.MouseEvent<HTMLElement>, nuevo: ModoVista | null) => {
     if (!nuevo) return;
     setModoVista(nuevo);
@@ -651,17 +522,19 @@ export function CG10Page() {
     setBusqueda('');
   };
 
-  // ── Selects dependientes ──
+  // ── Provincias filtradas ──
   const provinciasFiltradas = useMemo(
     () => filtros?.provincias.filter((p) => !departamento || p.departamento === departamento) ?? [],
     [filtros, departamento],
   );
+
+  // ── Microredes filtradas ──
   const microredesFiltradas = useMemo(
     () => filtros?.microredes.filter((m) => !red || m.red === red) ?? [],
     [filtros, red],
   );
 
-  // ── Filas planas ──
+  // ── Filas planas para DataGrid — Territorial ──
   const filasPlanasTerritorial = useMemo(() => {
     if (!tabla) return [];
     const q = busqueda.toUpperCase();
@@ -670,6 +543,7 @@ export function CG10Page() {
       .map((d, i) => ({ ...d, id: i }));
   }, [tabla, busqueda]);
 
+  // ── Filas planas para DataGrid — Redes ──
   const filasRedes = useMemo(() => {
     if (!tablaRedes) return [];
     const q = busqueda.toUpperCase();
@@ -678,10 +552,30 @@ export function CG10Page() {
       .map((e, i) => ({ ...e, id: i }));
   }, [tablaRedes, busqueda]);
 
+  // ── Datos del gráfico según modo ──
+  const datosGrafico = useMemo(() => {
+    if (modoVista === 'territorial' && tabla) {
+      return tabla.provincias.map((p) => ({
+        name: p.PROVINCIA.length > 11 ? `${p.PROVINCIA.slice(0, 11)}…` : p.PROVINCIA,
+        Denominador: p.denominador,
+        Numerador:   p.numerador,
+        'Avance %':  p.avance_pct,
+      }));
+    }
+    if (modoVista === 'redes' && tablaRedes) {
+      return tablaRedes.redes.map((r) => ({
+        name: r.RED.length > 11 ? `${r.RED.slice(0, 11)}…` : r.RED,
+        Denominador: r.denominador,
+        Numerador:   r.numerador,
+        'Avance %':  r.avance_pct,
+      }));
+    }
+    return [];
+  }, [modoVista, tabla, tablaRedes]);
+
   const totalActual = modoVista === 'territorial' ? tabla?.total : tablaRedes?.total;
   const mesActual   = modoVista === 'territorial' ? tabla?.mes   : tablaRedes?.mes;
   const anioActual  = modoVista === 'territorial' ? tabla?.anio  : tablaRedes?.anio;
-  const colorModo   = modoVista === 'territorial' ? '#1565C0'    : '#00695C';
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -698,36 +592,45 @@ export function CG10Page() {
 
       {/* ── Encabezado ── */}
       <Box display="flex" alignItems="center" gap={1.5} mb={1}>
-        <Avatar sx={{ bgcolor: alpha('#F57F17', 0.12), color: '#F57F17', width: 44, height: 44 }}>
-          <ChildCareIcon />
+        <Avatar sx={{ bgcolor: alpha('#1565C0', 0.1), color: 'primary.main', width: 44, height: 44 }}>
+          <PregnantWomanIcon />
         </Avatar>
         <Box>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h4" fontWeight={700}>CG-10</Typography>
-            <Chip label="Convenio de Gestión" size="small" variant="outlined"
-              sx={{ borderColor: alpha('#F57F17', 0.5), color: '#E65100', fontWeight: 600 }} />
-          </Box>
+          <Typography variant="h4" fontWeight={700}>FED MC-01.01</Typography>
           <Typography color="text.secondary">
-            Porcentaje de niñas y niños (6 meses a 6 años, 11 meses y 29 días) que reciben procedimientos estomatológicos preventivos. 
+            Porcentaje de mujeres con parto institucional, procedentes de los distritos de quintiles 1 y 2 de pobreza departamental que durante su gestación recibieron el paquete integrado de servicios.
           </Typography>
         </Box>
       </Box>
       <Divider sx={{ mb: 3 }} />
 
-      {/* ── Toggle de vista ── */}
+      {/* ── Toggle de modo de vista ── */}
       <Box display="flex" justifyContent="center" mb={3}>
         <ToggleButtonGroup
-          value={modoVista} exclusive onChange={handleModoVista}
+          value={modoVista}
+          exclusive
+          onChange={handleModoVista}
           sx={{
             bgcolor: 'background.paper',
-            border: '1px solid', borderColor: alpha('#1565C0', 0.20),
-            borderRadius: 3, overflow: 'hidden',
+            border: '1px solid',
+            borderColor: alpha('#1565C0', 0.20),
+            borderRadius: 3,
+            overflow: 'hidden',
             boxShadow: '0 2px 12px rgba(21,101,192,0.10)',
             '& .MuiToggleButton-root': {
-              px: 3, py: 1.2, fontWeight: 600, fontSize: '0.88rem',
-              textTransform: 'none', border: 'none', gap: 0.8, color: 'text.secondary',
-              '&.Mui-selected': { bgcolor: colorModo, color: '#fff', '&:hover': { bgcolor: colorModo } },
-              '&:hover': { bgcolor: alpha(colorModo, 0.06) },
+              px: 3, py: 1.2,
+              fontWeight: 600,
+              fontSize: '0.88rem',
+              textTransform: 'none',
+              border: 'none',
+              gap: 0.8,
+              color: 'text.secondary',
+              '&.Mui-selected': {
+                bgcolor: '#1565C0',
+                color: '#fff',
+                '&:hover': { bgcolor: '#1565C0' },
+              },
+              '&:hover': { bgcolor: alpha('#1565C0', 0.06) },
             },
           }}
         >
@@ -751,8 +654,10 @@ export function CG10Page() {
           boxShadow: '0 4px 24px rgba(21,101,192,0.08)',
         }}
       >
-        <Typography variant="subtitle2" fontWeight={600} color="text.secondary"
-          sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Typography
+          variant="subtitle2" fontWeight={600} color="text.secondary"
+          sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 0.5 }}
+        >
           <FilterListIcon fontSize="small" /> Filtros
         </Typography>
         <Grid container spacing={2} alignItems="center">
@@ -779,21 +684,10 @@ export function CG10Page() {
             </FormControl>
           </Grid>
 
-          {/* Grupo etario */}
-          <Grid item xs={6} sm={3} md={2}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Grupo etario</InputLabel>
-              <Select value={grupo} label="Grupo etario" onChange={(e) => setGrupo(e.target.value as string)}>
-                <MenuItem value="">Todos</MenuItem>
-                {filtros?.grupos.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* Filtros condicionales */}
+          {/* Filtros condicionales según modo */}
           {modoVista === 'territorial' && (
             <>
-              <Grid item xs={6} sm={3} md={2}>
+              <Grid item xs={6} sm={3} md={3}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Departamento</InputLabel>
                   <Select value={departamento} label="Departamento"
@@ -803,7 +697,7 @@ export function CG10Page() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={3} md={2}>
+              <Grid item xs={6} sm={3} md={3}>
                 <FormControl fullWidth size="small" disabled={!departamento}>
                   <InputLabel>Provincia</InputLabel>
                   <Select value={provincia} label="Provincia"
@@ -820,7 +714,7 @@ export function CG10Page() {
 
           {modoVista === 'redes' && (
             <>
-              <Grid item xs={6} sm={3} md={2}>
+              <Grid item xs={6} sm={3} md={3}>
                 <FormControl fullWidth size="small">
                   <InputLabel>Red</InputLabel>
                   <Select value={red} label="Red"
@@ -830,7 +724,7 @@ export function CG10Page() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={6} sm={3} md={2}>
+              <Grid item xs={6} sm={3} md={3}>
                 <FormControl fullWidth size="small" disabled={!red}>
                   <InputLabel>Microred</InputLabel>
                   <Select value={microred} label="Microred"
@@ -870,11 +764,11 @@ export function CG10Page() {
       )}
 
       {/* ── KPIs + Gráficos ── */}
-      {totalActual && (
+      {(tabla || tablaRedes) && (
         <Grid container spacing={2} mb={3}>
 
           {/* KPI avance global */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={4} md={3}>
             <Paper
               elevation={0}
               sx={{
@@ -892,34 +786,36 @@ export function CG10Page() {
                 </Typography>
               </Box>
               <Typography variant="h3" fontWeight={900} letterSpacing={-1} lineHeight={1}>
-                {fmtPct(totalActual.avance_pct)}
+                {fmtPct(totalActual?.avance_pct)}
               </Typography>
               <Divider sx={{ my: 1.5, borderColor: 'rgba(255,255,255,0.25)' }} />
               <Box display="flex" justifyContent="space-around">
                 <Box textAlign="center">
                   <Typography variant="caption" sx={{ opacity: 0.75 }}>Denominador</Typography>
-                  <Typography variant="h6" fontWeight={700}>{totalActual.denominador?.toLocaleString()}</Typography>
+                  <Typography variant="h6" fontWeight={700}>
+                    {totalActual?.denominador?.toLocaleString()}
+                  </Typography>
                 </Box>
                 <Box textAlign="center">
                   <Typography variant="caption" sx={{ opacity: 0.75 }}>Numerador</Typography>
-                  <Typography variant="h6" fontWeight={700}>{totalActual.numerador?.toLocaleString()}</Typography>
+                  <Typography variant="h6" fontWeight={700}>
+                    {totalActual?.numerador?.toLocaleString()}
+                  </Typography>
                 </Box>
               </Box>
             </Paper>
           </Grid>
 
-          {/* Radar subindicadores */}
-          <Grid item xs={12} sm={6} md={3}>
-            <GraficoRadar total={totalActual} />
+          {/* Gráfico principal */}
+          <Grid item xs={12} sm={8} md={5}>
+            <GraficoBarras
+              titulo={modoVista === 'territorial' ? 'Avance por Provincia' : 'Avance por Red'}
+              data={datosGrafico}
+            />
           </Grid>
 
-          {/* KPIs subindicadores */}
+          {/* Gráfico tendencia */}
           <Grid item xs={12} md={4}>
-            <SubindicadoresKPIs total={totalActual} />
-          </Grid>
-
-          {/* Tendencia */}
-          <Grid item xs={12} md={2}>
             {loadingResumen
               ? <Box display="flex" justifyContent="center" alignItems="center" height={240}><CircularProgress size={28} /></Box>
               : <GraficoTendencia resumen={resumen} />
@@ -934,11 +830,11 @@ export function CG10Page() {
           elevation={0}
           sx={{
             p: 6, textAlign: 'center', borderRadius: 3,
-            border: '2px dashed', borderColor: alpha('#F57F17', 0.25),
+            border: '2px dashed', borderColor: alpha('#1565C0', 0.2),
             color: 'text.secondary',
           }}
         >
-          <ChildCareIcon sx={{ fontSize: 52, color: alpha('#F57F17', 0.2), mb: 1 }} />
+          <PregnantWomanIcon sx={{ fontSize: 52, color: alpha('#1565C0', 0.2), mb: 1 }} />
           <Typography>Selecciona un <strong>Año</strong> y un <strong>Mes</strong> para ver los datos.</Typography>
         </Paper>
 
@@ -953,16 +849,20 @@ export function CG10Page() {
           elevation={0}
           sx={{
             borderRadius: 3, overflow: 'hidden',
-            border: '1px solid', borderColor: alpha(colorModo, 0.12),
-            boxShadow: `0 4px 24px ${alpha(colorModo, 0.08)}`,
+            border: '1px solid',
+            borderColor: modoVista === 'territorial' ? alpha('#1565C0', 0.12) : alpha('#00695C', 0.12),
+            boxShadow: modoVista === 'territorial'
+              ? '0 4px 24px rgba(21,101,192,0.08)'
+              : '0 4px 24px rgba(0,105,92,0.08)',
           }}
         >
           {/* Cabecera tabla */}
           <Box
             sx={{
               px: 2.5, py: 1.5,
-              bgcolor: alpha(colorModo, 0.03),
-              borderBottom: '1px solid', borderColor: alpha(colorModo, 0.10),
+              bgcolor: modoVista === 'territorial' ? alpha('#1565C0', 0.03) : alpha('#00695C', 0.03),
+              borderBottom: '1px solid',
+              borderColor: modoVista === 'territorial' ? alpha('#1565C0', 0.10) : alpha('#00695C', 0.10),
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1,
             }}
           >
@@ -974,34 +874,55 @@ export function CG10Page() {
               )}
               {modoVista === 'redes' && tablaRedes && (
                 <Typography variant="subtitle2" color="text.secondary">
-                  {tablaRedes.establecimientos.length} establecimientos · {tablaRedes.microredes.length} microredes
+                  {tablaRedes.establecimientos.length} establecimientos · {tablaRedes.microredes.length} microredes · {tablaRedes.redes.length} redes
                 </Typography>
               )}
               <Chip
-                label={`${mesActual} ${anioActual}`} size="small"
-                color={modoVista === 'territorial' ? 'primary' : 'success'} variant="outlined"
+                label={`${mesActual} ${anioActual}`}
+                size="small"
+                color={modoVista === 'territorial' ? 'primary' : 'success'}
+                variant="outlined"
               />
             </Box>
+
+            {/* Selector de vista jerárquica / plana */}
             <Box display="flex" gap={1}>
               {(['jerarquica', 'plana'] as const).map((v) => (
-                <Chip key={v}
+                <Chip
+                  key={v}
                   label={v === 'jerarquica' ? 'Vista jerárquica' : 'Vista plana'}
                   size="small"
                   variant={vista === v ? 'filled' : 'outlined'}
                   color={vista === v ? (modoVista === 'territorial' ? 'primary' : 'success') : 'default'}
-                  onClick={() => setVista(v)} sx={{ cursor: 'pointer' }}
+                  onClick={() => setVista(v)}
+                  sx={{ cursor: 'pointer' }}
                 />
               ))}
             </Box>
           </Box>
 
-          {/* ═══════════ ORGANIZACIÓN TERRITORIAL ═══════════ */}
+          {/* ═══════════════ ORGANIZACIÓN TERRITORIAL ═══════════════ */}
           {modoVista === 'territorial' && tabla && (
             <>
               {vista === 'jerarquica' && (
                 <>
-                  <CabeceraTabla modo="territorial" />
-                  <Box sx={{ maxHeight: 560, overflowY: 'auto' }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
+                      px: 1, py: 1,
+                      bgcolor: alpha('#1565C0', 0.06),
+                      borderBottom: '2px solid', borderColor: alpha('#1565C0', 0.15),
+                    }}
+                  >
+                    {['', 'DEPARTAMENTO', 'PROVINCIA / DISTRITO', 'Denominador', 'Numerador', 'Avance %'].map((h, i) => (
+                      <Typography key={i} variant="caption" fontWeight={700} color="#1A2332"
+                        textAlign={i >= 3 ? 'center' : 'left'} sx={{ fontSize: '0.78rem' }}>
+                        {h}
+                      </Typography>
+                    ))}
+                  </Box>
+                  <Box sx={{ maxHeight: 520, overflowY: 'auto' }}>
                     {tabla.provincias.map((prov) => (
                       <ProvinciaFila
                         key={`${prov.DEPARTAMENTO}-${prov.PROVINCIA}`}
@@ -1009,13 +930,35 @@ export function CG10Page() {
                       />
                     ))}
                   </Box>
-                  {tabla.total && <FilaTotalGeneral total={tabla.total} color="#1565C0" />}
+                  {tabla.total && (
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
+                        alignItems: 'center', px: 1, py: 1,
+                        bgcolor: '#1565C0', borderTop: '2px solid', borderColor: '#0D47A1',
+                      }}
+                    >
+                      <Box />
+                      <Typography variant="body2" fontWeight={900} color="#fff">TOTAL GENERAL</Typography>
+                      <Box />
+                      <Typography variant="body2" fontWeight={900} color="#fff" textAlign="center">
+                        {tabla.total.denominador?.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={900} color="#fff" textAlign="center">
+                        {tabla.total.numerador?.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body1" fontWeight={900} color="#fff" textAlign="center">
+                        {fmtPct(tabla.total.avance_pct)}
+                      </Typography>
+                    </Box>
+                  )}
                 </>
               )}
               {vista === 'plana' && (
-                <Box sx={{ height: 580 }}>
+                <Box sx={{ height: 560 }}>
                   <DataGrid
-                    rows={filasPlanasTerritorial} columns={columnasPlanasTerritorial}
+                    rows={filasPlanasTerritorial} columns={columnasDetalleTerritorial}
                     density="compact" disableColumnMenu
                     pageSizeOptions={[25, 50, 100]}
                     initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
@@ -1023,7 +966,7 @@ export function CG10Page() {
                     sx={{
                       border: 'none',
                       '& .MuiDataGrid-columnHeaders': { bgcolor: alpha('#1565C0', 0.05), borderBottom: `2px solid ${alpha('#1565C0', 0.15)}` },
-                      '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700, fontSize: '0.78rem', color: '#1A2332' },
+                      '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700, fontSize: '0.8rem', color: '#1A2332' },
                       '& .MuiDataGrid-row:hover': { bgcolor: alpha('#1565C0', 0.04) },
                       '& .MuiDataGrid-row:nth-of-type(even)': { bgcolor: alpha('#1565C0', 0.015) },
                       '& .MuiDataGrid-cell': { borderColor: alpha('#000', 0.05) },
@@ -1035,29 +978,67 @@ export function CG10Page() {
             </>
           )}
 
-          {/* ═══════════ REDES INTEGRADAS DE SALUD ═══════════ */}
+          {/* ═══════════════ REDES INTEGRADAS DE SALUD ═══════════════ */}
           {modoVista === 'redes' && tablaRedes && (
             <>
               {vista === 'jerarquica' && (
                 <>
-                  <CabeceraTabla modo="redes" />
-                  <Box sx={{ maxHeight: 560, overflowY: 'auto' }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
+                      px: 1, py: 1,
+                      bgcolor: alpha('#00695C', 0.06),
+                      borderBottom: '2px solid', borderColor: alpha('#00695C', 0.15),
+                    }}
+                  >
+                    {['', 'RED / MICRORED', 'ESTABLECIMIENTO', 'Denominador', 'Numerador', 'Avance %'].map((h, i) => (
+                      <Typography key={i} variant="caption" fontWeight={700} color="#1A2332"
+                        textAlign={i >= 3 ? 'center' : 'left'} sx={{ fontSize: '0.78rem' }}>
+                        {h}
+                      </Typography>
+                    ))}
+                  </Box>
+                  <Box sx={{ maxHeight: 520, overflowY: 'auto' }}>
                     {tablaRedes.redes.map((r) => (
                       <RedFila
-                        key={r.RED} red={r}
+                        key={r.RED}
+                        red={r}
                         microredes={tablaRedes.microredes}
                         establecimientos={tablaRedes.establecimientos}
                         busqueda={busqueda}
                       />
                     ))}
                   </Box>
-                  {tablaRedes.total && <FilaTotalGeneral total={tablaRedes.total} color="#00695C" />}
+                  {tablaRedes.total && (
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: '40px 1fr 1fr 110px 100px 120px',
+                        alignItems: 'center', px: 1, py: 1,
+                        bgcolor: '#00695C', borderTop: '2px solid', borderColor: '#004D40',
+                      }}
+                    >
+                      <Box />
+                      <Typography variant="body2" fontWeight={900} color="#fff">TOTAL GENERAL</Typography>
+                      <Box />
+                      <Typography variant="body2" fontWeight={900} color="#fff" textAlign="center">
+                        {tablaRedes.total.denominador?.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={900} color="#fff" textAlign="center">
+                        {tablaRedes.total.numerador?.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body1" fontWeight={900} color="#fff" textAlign="center">
+                        {fmtPct(tablaRedes.total.avance_pct)}
+                      </Typography>
+                    </Box>
+                  )}
                 </>
               )}
               {vista === 'plana' && (
-                <Box sx={{ height: 580 }}>
+                <Box sx={{ height: 560 }}>
                   <DataGrid
-                    rows={filasRedes} columns={columnasPlanaRedes}
+                    rows={filasRedes} columns={columnasDetalleRedes}
                     density="compact" disableColumnMenu
                     pageSizeOptions={[25, 50, 100]}
                     initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
@@ -1065,7 +1046,7 @@ export function CG10Page() {
                     sx={{
                       border: 'none',
                       '& .MuiDataGrid-columnHeaders': { bgcolor: alpha('#00695C', 0.05), borderBottom: `2px solid ${alpha('#00695C', 0.15)}` },
-                      '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700, fontSize: '0.78rem', color: '#1A2332' },
+                      '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 700, fontSize: '0.8rem', color: '#1A2332' },
                       '& .MuiDataGrid-row:hover': { bgcolor: alpha('#00695C', 0.04) },
                       '& .MuiDataGrid-row:nth-of-type(even)': { bgcolor: alpha('#00695C', 0.015) },
                       '& .MuiDataGrid-cell': { borderColor: alpha('#000', 0.05) },
