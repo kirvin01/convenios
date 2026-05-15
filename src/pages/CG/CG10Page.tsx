@@ -28,7 +28,7 @@ import { alpha } from '@mui/material/styles';
 import {
   ResponsiveContainer, BarChart, Bar,
   XAxis, YAxis, CartesianGrid,
-  Tooltip as RTooltip, Legend, RadarChart,
+  Tooltip as RTooltip, RadarChart,
   PolarGrid, PolarAngleAxis, Radar,
 } from 'recharts';
 import {

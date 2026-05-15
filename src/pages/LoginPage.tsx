@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import { API_CONFIG } from '../config';
 import { login } from '../services/authService';
+import logo from '../assets/logo.webp';
 
 interface LoginPageProps {
     onLoginSuccess: (username: string) => void;
@@ -78,7 +79,10 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     background: 'linear-gradient(135deg, #1565C0 0%, #1976D2 100%)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5,
                 }}>
-                    <Avatar sx={{
+                    <Avatar 
+                    src={logo}
+                    alt="Logo GERESA"
+                    sx={{
                         width: 64, height: 64,
                         bgcolor: 'rgba(255,255,255,0.15)',
                         border: '2px solid rgba(255,255,255,0.3)',
@@ -88,7 +92,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                     </Avatar>
                     <Box sx={{ textAlign: 'center' }}>
                         <Typography variant="h6" fontWeight={700} color="white" sx={{ lineHeight: 1.2 }}>
-                            GERESA — HIS MINSA
+                            GERENCIA REGIONAL DE SALUD
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                             Sistema de Historial de Atenciones
@@ -164,7 +168,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
                 <Box sx={{ px: 4, pb: 3, textAlign: 'center' }}>
                     <Typography variant="caption" color="text.disabled">
-                        Gerencia Regional de Salud Cusco
+                        Dirección de Estadística, Informática y Telecomunicaciones
                     </Typography>
                 </Box>
             </Paper>

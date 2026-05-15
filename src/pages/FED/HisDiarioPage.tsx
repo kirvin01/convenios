@@ -91,7 +91,7 @@ function CustomTooltip({ active, payload, label }: {
 function renderLabel({ x, y, value, color }: { x?: number; y?: number; value?: number; color?: string }) {
   if (value == null || value === 0) return null;
   return (
-    <text x={x} y={(y ?? 0) - 8} textAnchor="middle" fontSize={9} fontWeight={700} fill={color ?? '#333'}>
+    <text x={x} y={(y ?? 0) - 8} textAnchor="middle" fontSize={10} fontWeight={700} fill={color ?? '#333'}>
       {fmtNum(value)}
     </text>
   );
@@ -204,7 +204,7 @@ function GraficoDiario({
           >
             <LabelList
               dataKey="Total Atenciones"
-              content={(props) => renderLabel({ ...props as { x?: number; y?: number; value?: number }, color: '#fff' })}
+              content={(props) => renderLabel({ ...props as { x?: number; y?: number; value?: number }, color: '#000000' })}
               position="center"
             />
           </Line>
@@ -231,7 +231,7 @@ function GraficoDiario({
           >
             <LabelList
               dataKey="Registros Oportunos"
-              content={(props) => renderLabel({ ...props as { x?: number; y?: number; value?: number }, color: '#fff' })}
+              content={(props) => renderLabel({ ...props as { x?: number; y?: number; value?: number }, color: '#000000' })}
               position="center"
             />
           </Line>
