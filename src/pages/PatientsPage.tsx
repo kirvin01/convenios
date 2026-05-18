@@ -111,7 +111,7 @@ export function PatientsPage() {
     const [pacientesPaginationModel, setPacientesPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 5 });
     const [atencionesPaginationModel, setAtencionesPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 25 });
 
-    const anios = Array.from({ length: 3 }, (_, i) => new Date().getFullYear() - i);
+    const anios = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
     const meses = [
         { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' }, { value: 3, label: 'Marzo' },
         { value: 4, label: 'Abril' }, { value: 5, label: 'Mayo' }, { value: 6, label: 'Junio' },

@@ -49,8 +49,44 @@ const navItems: NavItem[] = [
             },
 
             {
-                label: 'Variación Diaria',
+                label: 'MC-02.01',
                 path: '/reportesFED/fed02',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'MC-03.01',
+                path: '/reportesFED/fed03',
+                icon: <LocalHospitalIcon />,
+            },
+
+             {
+                label: 'SI-01.01',
+                path: '/reportesFED/fed04',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'SI-01.02',
+                path: '/reportesFED/fed05',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'SI-02.01',
+                path: '/reportesFED/fed06',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'SI-02.02',
+                path: '/reportesFED/fed07',
+                icon: <LocalHospitalIcon />,
+            },
+
+            {
+                label: 'Variación Diaria',
+                path: '/reportesFED/fed015',
                 icon: <LocalHospitalIcon />,
             },
         ],

@@ -11,6 +11,12 @@ import './App.css';
 import { ReportesPage } from './pages/FED/ReportesFED';
 import { CG10Page } from './pages/CG/CG10Page';
 import { HisDiarioPage } from './pages/FED/HisDiarioPage';
+import { FedMC0301Page } from './pages/FED/FedMC0301Page';
+import { FedSI0101Page } from './pages/FED/FedSI0101Page';
+import { FedMC0201Page } from './pages/FED/FedMC0201Page';
+import { FedSI0102Page } from './pages/FED/FedSI0102Page';
+import { FedSI0201Page } from './pages/FED/FedSI0201Page';
+import { FedSI0202Page } from './pages/FED/FedSI0202Page';
 
 function RequireAuth({ authenticated, children }: { authenticated: boolean; children: ReactNode }) {
     return authenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -73,7 +79,14 @@ export default function App() {
                         <Route path="/pacientes" element={<PatientsPage />} />
                         <Route path="/admin/usuarios" element={userIsAdmin ? <AdminUsersPage /> : <Navigate to="/pacientes" replace />} />
                         <Route path="/reportesFED/fed01" element={<ReportesPage />} />
-                        <Route path="/reportesFED/fed02" element={<HisDiarioPage />} />
+                        <Route path="/reportesFED/fed02" element={<FedMC0201Page />} />
+                        <Route path="/reportesFED/fed03" element={<FedMC0301Page />} />
+                        <Route path="/reportesFED/fed04" element={<FedSI0101Page />} />
+                        <Route path="/reportesFED/fed05" element={<FedSI0102Page />} />
+                        <Route path="/reportesFED/fed06" element={<FedSI0201Page />} />
+                        <Route path="/reportesFED/fed07" element={<FedSI0202Page />} />
+                        <Route path="/reportesFED/fed015" element={<HisDiarioPage />} />
+                        
 
                         <Route path="/reportesCG/cg10" element={<CG10Page />} />
                         <Route path="/reportesCG/cg11" element={<CG10Page />} />
